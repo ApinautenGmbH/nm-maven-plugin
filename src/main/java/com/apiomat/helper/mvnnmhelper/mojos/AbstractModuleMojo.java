@@ -10,15 +10,16 @@
  * thum */
 package com.apiomat.helper.mvnnmhelper.mojos;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Properties;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.utils.StringUtils;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Properties;
 
 /**
  * AbstractModuleMojo class for common module related fields and methods (like the moduleName or the project)
@@ -39,6 +40,9 @@ public abstract class AbstractModuleMojo extends AbstractMojo
 	@Parameter( defaultValue = "${project}", readonly = true, required = true )
 	protected MavenProject project;
 
+	@Parameter( defaultValue = "${mojoExecution}", readonly = true )
+	protected MojoExecution mojoExecution;
+
 	/**
 	 * Directory containing the source files that should be packaged into the JAR.
 	 */
@@ -50,6 +54,9 @@ public abstract class AbstractModuleMojo extends AbstractMojo
 	 */
 	@Parameter( defaultValue = "${project.basedir}", required = true )
 	protected File baseDirectory;
+
+	@Parameter( defaultValue = "false", property = "nmSkip", required = false )
+	protected boolean nmSkip;
 
 	/**
 	 * @return either the module name from property, from pom artifact name or the artifactId

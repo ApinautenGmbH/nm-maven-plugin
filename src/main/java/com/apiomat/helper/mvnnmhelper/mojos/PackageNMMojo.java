@@ -10,9 +10,6 @@
  * thum */
 package com.apiomat.helper.mvnnmhelper.mojos;
 
-import java.io.File;
-import java.lang.reflect.Field;
-
 import org.apache.maven.archiver.MavenArchiveConfiguration;
 import org.apache.maven.archiver.MavenArchiver;
 import org.apache.maven.execution.MavenSession;
@@ -26,6 +23,9 @@ import org.apache.maven.plugins.jar.JarMojo;
 import org.apache.maven.shared.utils.StringUtils;
 import org.codehaus.plexus.archiver.jar.JarArchiver;
 import org.codehaus.plexus.archiver.util.DefaultFileSet;
+
+import java.io.File;
+import java.lang.reflect.Field;
 
 /**
  * Goal to package the native module as uploadable jar
@@ -60,6 +60,9 @@ public class PackageNMMojo extends JarMojo
 	@Parameter( defaultValue = "${project.build.sourceDirectory}", required = true )
 	private File sourceDirectory;
 
+	@Parameter( defaultValue = "false", property = "nmSkip", required = false )
+	protected boolean nmSkip;
+
 	/**
 	 * The Jar archiver.
 	 */
@@ -84,6 +87,12 @@ public class PackageNMMojo extends JarMojo
 	@Override
 	public void execute( ) throws MojoExecutionException
 	{
+		/* if execution should be skipped then return directly */
+		if ( this.nmSkip )
+		{
+			getLog( ).debug( "Execution skipped" );
+			return;
+		}
 		setValuesFromParent( );
 		super.execute( );
 	}

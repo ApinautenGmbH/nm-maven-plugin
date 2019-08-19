@@ -10,16 +10,15 @@
  * thum */
 package com.apiomat.helper.mvnnmhelper.mojos;
 
-import java.io.File;
-
+import com.apiomat.helper.mvnnmhelper.ModuleUpdateManager;
+import com.apiomat.helper.mvnnmhelper.VersionCompareHelper;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.codehaus.plexus.util.StringUtils;
 
-import com.apiomat.helper.mvnnmhelper.ModuleUpdateManager;
-import com.apiomat.helper.mvnnmhelper.VersionCompareHelper;
+import java.io.File;
 
 /**
  * Goal to update the module contents to the specified yambas version
@@ -45,6 +44,13 @@ public class UpdateVersionNMMojo extends AbstractModuleMojo
 	@Override
 	public void execute( ) throws MojoExecutionException
 	{
+		/* if execution should be skipped then return directly */
+		if ( this.nmSkip )
+		{
+			getLog( ).info( "Execution skipped" );
+			return;
+		}
+
 		/* INTERNAL NOTE: always work with the basePath, when working on the filesystem, as the task may be called
 		 * internally in yambas and therefore have another workdir than the specified basepath */
 		final File basePath = this.project.getBasedir( );
