@@ -10,35 +10,24 @@
  * thum */
 package com.apiomat.helper.mvnnmhelper.mojos;
 
-import java.io.IOException;
-import java.security.cert.X509Certificate;
-import java.util.Base64;
-import java.util.Map;
-
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
-
 import org.apache.http.client.ClientProtocolException;
 import org.apache.maven.execution.MavenSession;
-import org.apache.maven.plugin.BuildPluginManager;
-import org.apache.maven.plugin.MojoExecution;
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugin.PluginConfigurationException;
-import org.apache.maven.plugin.PluginManagerException;
+import org.apache.maven.plugin.*;
 import org.apache.maven.plugin.descriptor.MojoDescriptor;
 import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.shared.utils.StringUtils;
 import org.codehaus.plexus.configuration.PlexusConfiguration;
-import org.codehaus.plexus.configuration.xml.XmlPlexusConfiguration;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.codehaus.plexus.util.xml.Xpp3DomUtils;
+
+import javax.net.ssl.*;
+import java.io.IOException;
+import java.security.cert.X509Certificate;
+import java.util.Base64;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Abstract class for all goals that communicate directly with yambas
@@ -77,9 +66,6 @@ public abstract class AbstractRequestMojo extends AbstractModuleMojo
 	@Parameter( property = "customerPassword", required = true )
 	protected String customerPassword;
 
-	/** the configuration */
-	@Parameter
-	protected XmlPlexusConfiguration configuration;
 
 	/**
 	 * The {@link MavenSession}.
@@ -109,11 +95,11 @@ public abstract class AbstractRequestMojo extends AbstractModuleMojo
 		}
 
 		@Override
-		public void checkClientTrusted( final X509Certificate[ ] certs, final String authType )
+		public void checkClientTrusted( final X509Certificate[] certs, final String authType )
 		{}
 
 		@Override
-		public void checkServerTrusted( final X509Certificate[ ] certs, final String authType )
+		public void checkServerTrusted( final X509Certificate[] certs, final String authType )
 		{}
 	}
 	};
@@ -121,6 +107,12 @@ public abstract class AbstractRequestMojo extends AbstractModuleMojo
 	@Override
 	public final void execute( ) throws MojoExecutionException // , MojoFailureException
 	{
+		/* if execution should be skipped then return directly */
+		if ( this.nmSkip )
+		{
+			getLog( ).info( "Execution skipped" );
+			return;
+		}
 		if ( this.host == null ||
 			( StringUtils.isBlank( this.customerName ) && StringUtils.isBlank( this.customerEmail ) ) ||
 			this.customerPassword == null )
@@ -192,14 +184,15 @@ public abstract class AbstractRequestMojo extends AbstractModuleMojo
 			if ( mojo == null )
 			{
 				throw new MojoExecutionException( "Could not find goal '" + goal + "' in plugin " ); // +
-				// this.plugin.getGroupId( ) + ":" + this.plugin.getArtifactId( ) + ":" + this.plugin.getVersion( ) );
 			}
-
 			final Xpp3Dom mojoConfig = toXpp3Dom( mojo.getMojoConfiguration( ) );
+			final Xpp3Dom existingConfig =
+				toXpp3Dom( this.mojoExecution.getConfiguration( ), mojo.getParameterMap( ).keySet( ) );
 			final Xpp3Dom mergedConfiguration =
-				this.configuration != null ? Xpp3DomUtils.mergeXpp3Dom( toXpp3Dom( this.configuration ), mojoConfig )
+				existingConfig != null ? Xpp3DomUtils.mergeXpp3Dom( existingConfig, mojoConfig )
 					: mojoConfig;
-			final MojoExecution exec = new MojoExecution( mojo, mergedConfiguration );
+			final MojoExecution exec = new MojoExecution( mojo, this.mojoExecution.getExecutionId( ) );
+			exec.setConfiguration( mergedConfiguration );
 			this.pluginManager.executeMojo( this.session, exec );
 		}
 		catch ( final MojoExecutionException | MojoFailureException
@@ -208,6 +201,45 @@ public abstract class AbstractRequestMojo extends AbstractModuleMojo
 			throw new MojoExecutionException(
 				"Cloud not execute goal, please execute goal " + goal + " by yourself", e );
 		}
+	}
+
+	/**
+	 * Clone existing Xpp3Dom to new Xpp3Dom but only that attributes and values that are in parameterNames list
+	 *
+	 * @param config
+	 * @param parameterNames
+	 * @return
+	 */
+	private static Xpp3Dom toXpp3Dom( final Xpp3Dom config,
+		final Set<String> parameterNames )
+	{
+		Xpp3Dom result = null;
+		if ( config != null )
+		{
+			final int childCount = config.getChildCount( );
+			result = new Xpp3Dom( config.getName( ) );
+			result.setValue( config.getValue( ) );
+
+			final String[] attributeNames = config.getAttributeNames( );
+			for ( final String attributeName : attributeNames )
+			{
+				if ( parameterNames.contains( attributeName ) )
+				{
+					result.setAttribute( attributeName, config.getAttribute( attributeName ) );
+				}
+			}
+
+			for ( int i = 0; i < childCount; i++ )
+			{
+				final Xpp3Dom child = config.getChild( i );
+				if ( parameterNames.contains( child.getName( ) ) )
+				{
+					result.addChild( new Xpp3Dom( child ) );
+				}
+			}
+
+		}
+		return result;
 	}
 
 	private static Xpp3Dom toXpp3Dom( final PlexusConfiguration config )
