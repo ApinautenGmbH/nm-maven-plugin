@@ -124,7 +124,7 @@ public class PackageNMMojo extends JarMojo
 			f.setAccessible( true );
 			return f.get( this );
 		}
-		catch ( NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e )
+		catch ( final NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e )
 		{
 			e.printStackTrace( );
 		}
@@ -162,7 +162,9 @@ public class PackageNMMojo extends JarMojo
 		{
 			final File contentDirectory = getClassesDirectory( );
 			final File sourceDirectory = getSourceDirectory( );
-			final File libDir = new File( getProject( ).getBasedir( ), "lib" );
+			final File baseDirectory = sourceDirectory.getParentFile( );
+			final File libDir = new File( baseDirectory, "lib" );
+
 			if ( contentDirectory.exists( ) == false && sourceDirectory.exists( ) == false &&
 				getProject( ).getBasedir( ).exists( ) == false && libDir.exists( ) == false )
 			{
@@ -172,16 +174,16 @@ public class PackageNMMojo extends JarMojo
 			{
 				archiver.getArchiver( ).addDirectory( contentDirectory, getIncludes( ), getExcludes( ) );
 				/* also add to jar: *.java, *.png, *.svg, and all files under META-INF in src directory */
-				final DefaultFileSet sourcefs = new DefaultFileSet( getProject( ).getBasedir( ) )
+				final DefaultFileSet sourcefs = new DefaultFileSet( baseDirectory )
 					.includeExclude( getSourceIncludes( ), getSourceExcludes( ) );
 
-				final DefaultFileSet resourceFs = new DefaultFileSet( new File( getProject( ).getBasedir( ), "src" ) )
+				final DefaultFileSet resourceFs = new DefaultFileSet( sourceDirectory )
 					.includeExclude( getSourceResourceIncludes( ), getSourceResourceExcludes( ) );
 				archiver.getArchiver( ).addFileSet( resourceFs );
 
 				archiver.getArchiver( ).addFileSet( sourcefs );
 				/* also add the pom.xml */
-				archiver.getArchiver( ).addDirectory( getProject( ).getBasedir( ), new String[ ] { "pom.xml" },
+				archiver.getArchiver( ).addDirectory( baseDirectory, new String[] { "pom.xml" },
 					new String[ ] { } );
 
 				/* and the libs */
