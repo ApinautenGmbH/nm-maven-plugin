@@ -10,9 +10,6 @@
  * thum */
 package com.apiomat.helper.mvnnmhelper.mojos;
 
-import java.io.IOException;
-import java.net.URI;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -25,6 +22,9 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+
+import java.io.IOException;
+import java.net.URI;
 
 /**
  * Goal to upload a native module artifact
@@ -65,7 +65,9 @@ public class AddModuleDependencyMojo extends AbstractRequestMojo
 			new BasicNameValuePair( "parentModuleVersion", this.usedModuleVersion );
 
 		final Response response =
-			Request.Post( buildHostUrl( ) ).addHeader( "Authorization", getUserAuthHeaderValue( ) )
+			Request.Post( buildHostUrl( ) )
+				.addHeader( "X-apiomat-system", this.system )
+				.addHeader( "Authorization", getUserAuthHeaderValue( ) )
 				.bodyForm( moduleNameParam, moduleVersionParam )
 				.execute( );
 		final HttpResponse httpResponse = response.returnResponse( );
