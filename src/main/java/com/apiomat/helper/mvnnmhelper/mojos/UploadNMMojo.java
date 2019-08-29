@@ -57,17 +57,17 @@ public class UploadNMMojo extends AbstractRequestMojo
 	/**
 	 * Name of the generated JAR.
 	 */
-	@Parameter( defaultValue = "${project.build.finalName}")
+	@Parameter( defaultValue = "${project.build.finalName}" )
 	private String finalName;
 
 	@Override
 	public void executeRequest( ) throws MojoExecutionException, IOException
 	{
 
-		URI hostUrl = buildHostUrl( );
-		URL url = hostUrl.toURL( );
+		final URI hostUrl = buildHostUrl( );
+		final URL url = hostUrl.toURL( );
 
-		HttpURLConnection connection = ( HttpURLConnection ) url.openConnection( );
+		final HttpURLConnection connection = ( HttpURLConnection ) url.openConnection( );
 		connection.setDoOutput( true );
 		connection.setRequestProperty( "Content-Type", "application/octet-stream" );
 		connection.setRequestMethod( "POST" );
@@ -83,14 +83,14 @@ public class UploadNMMojo extends AbstractRequestMojo
 
 		connection.setRequestProperty( "Authorization", getUserAuthHeaderValue( ) );
 
-		File jarFile = getJarFile( this.moduleJarPath, this.finalName, "NM" );
+		final File jarFile = getJarFile( this.moduleJarPath, this.finalName, "NM" );
 		if ( jarFile.exists( ) == false )
 		{
 			throw new MojoExecutionException( "Can't find module jar in " + jarFile.getAbsolutePath( ) );
 		}
-		OutputStream writer = connection.getOutputStream( );
-		FileInputStream fis = new FileInputStream( jarFile );
-		byte[ ] buf = new byte[ 1024 ];
+		final OutputStream writer = connection.getOutputStream( );
+		final FileInputStream fis = new FileInputStream( jarFile );
+		final byte[] buf = new byte[ 1024 ];
 		System.out.print( "Writing bytes " );
 		for ( int c = fis.read( buf ); c != -1; c = fis.read( buf ) )
 		{
@@ -101,18 +101,18 @@ public class UploadNMMojo extends AbstractRequestMojo
 		writer.close( );
 		fis.close( );
 		System.out.println( "" );
-		int responseCode = connection.getResponseCode( );
+		final int responseCode = connection.getResponseCode( );
 		if ( responseCode != HttpURLConnection.HTTP_CREATED )
 		{
-			try (InputStream is =
+			try (final InputStream is =
 				( 200 <= responseCode && responseCode <= 299 ) ? connection.getInputStream( )
 					: connection.getErrorStream( ))
 			{
 				String reason = "";
 				if ( is != null )
 				{
-					StringBuilder inputStringBuilder = new StringBuilder( );
-					BufferedReader bufferedReader =
+					final StringBuilder inputStringBuilder = new StringBuilder( );
+					final BufferedReader bufferedReader =
 						new BufferedReader( new InputStreamReader( is, "UTF-8" ) );
 					String line = bufferedReader.readLine( );
 					while ( line != null )
@@ -139,9 +139,9 @@ public class UploadNMMojo extends AbstractRequestMojo
 	{
 		try
 		{
-			StringBuilder sb = new StringBuilder( );
+			final StringBuilder sb = new StringBuilder( );
 			sb.append( this.host ).append( "/yambas/rest/modules/asset" );
-			URIBuilder bldr = new URIBuilder( sb.toString( ) );
+			final URIBuilder bldr = new URIBuilder( sb.toString( ) );
 			if ( StringUtils.isNotBlank( this.system ) )
 			{
 				bldr.addParameter( "usedSystem", this.system );
@@ -152,7 +152,7 @@ public class UploadNMMojo extends AbstractRequestMojo
 			}
 			return bldr.build( );
 		}
-		catch ( Exception e )
+		catch ( final Exception e )
 		{
 			getLog( ).error( "Error building url", e );
 		}
@@ -162,12 +162,12 @@ public class UploadNMMojo extends AbstractRequestMojo
 	/**
 	 * Returns the Jar file to generate, based on an optional classifier.
 	 *
-	 * @param basedir the output directory
+	 * @param basedir         the output directory
 	 * @param resultFinalName the name of the ear file
-	 * @param classifier an optional classifier
+	 * @param classifier      an optional classifier
 	 * @return the file to generate
 	 */
-	protected static File getJarFile( File basedir, String resultFinalName, String classifier )
+	protected static File getJarFile( final File basedir, final String resultFinalName, final String classifier )
 	{
 		if ( basedir == null )
 		{
@@ -178,7 +178,7 @@ public class UploadNMMojo extends AbstractRequestMojo
 			throw new IllegalArgumentException( "finalName is not allowed to be null" );
 		}
 
-		StringBuilder fileName = new StringBuilder( resultFinalName );
+		final StringBuilder fileName = new StringBuilder( resultFinalName );
 		fileName.append( "-" ).append( classifier );
 		fileName.append( ".jar" );
 
