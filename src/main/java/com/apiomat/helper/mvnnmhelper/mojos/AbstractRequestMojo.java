@@ -12,7 +12,12 @@ package com.apiomat.helper.mvnnmhelper.mojos;
 
 import org.apache.http.client.ClientProtocolException;
 import org.apache.maven.execution.MavenSession;
-import org.apache.maven.plugin.*;
+import org.apache.maven.plugin.BuildPluginManager;
+import org.apache.maven.plugin.MojoExecution;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.PluginConfigurationException;
+import org.apache.maven.plugin.PluginManagerException;
 import org.apache.maven.plugin.descriptor.MojoDescriptor;
 import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.apache.maven.plugins.annotations.Component;
@@ -22,7 +27,12 @@ import org.codehaus.plexus.configuration.PlexusConfiguration;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.codehaus.plexus.util.xml.Xpp3DomUtils;
 
-import javax.net.ssl.*;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import java.io.IOException;
 import java.security.cert.X509Certificate;
 import java.util.Base64;
@@ -221,11 +231,15 @@ public abstract class AbstractRequestMojo extends AbstractModuleMojo
 			result.setValue( config.getValue( ) );
 
 			final String[] attributeNames = config.getAttributeNames( );
-			for ( final String attributeName : attributeNames )
+
+			if ( attributeNames != null )
 			{
-				if ( parameterNames.contains( attributeName ) )
+				for ( final String attributeName : attributeNames )
 				{
-					result.setAttribute( attributeName, config.getAttribute( attributeName ) );
+					if ( parameterNames.contains( attributeName ) )
+					{
+						result.setAttribute( attributeName, config.getAttribute( attributeName ) );
+					}
 				}
 			}
 
