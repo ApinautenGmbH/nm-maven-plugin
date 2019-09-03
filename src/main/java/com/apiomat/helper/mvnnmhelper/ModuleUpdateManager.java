@@ -1,15 +1,46 @@
-/* Copyright (c) 2011 - 2017 All Rights Reserved, http://www.apiomat.com/
+/*
+ * Copyright 2019 the original author or authors.
  *
- * This source is property of apiomat.com. You are not allowed to use or distribute this code without a contract
- * explicitly giving you these permissions. Usage of this code includes but is not limited to running it on a server or
- * copying parts from it.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
- * Apinauten GmbH, Hainstrasse 4, 04109 Leipzig, Germany
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  *
- * Mar 27, 2017
- * thum */
+ */
 package com.apiomat.helper.mvnnmhelper;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.maven.model.Dependency;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.logging.Log;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -33,33 +64,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpression;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.maven.model.Dependency;
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.logging.Log;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
-import org.xml.sax.SAXException;
 
 /**
  * Handles all Module updates
@@ -409,7 +413,7 @@ public class ModuleUpdateManager
 					}
 				}
 			}
-			try (FileOutputStream fos = new FileOutputStream( classPathFile ))
+			try (final FileOutputStream fos = new FileOutputStream( classPathFile ))
 			{
 				fos.write( content.getBytes( ) );
 				fos.flush( );
@@ -493,7 +497,7 @@ public class ModuleUpdateManager
 				}
 				content = beforeDepsEnd + afterDepsEnd;
 			}
-			try (FileOutputStream fos = new FileOutputStream( pomxmlFile ))
+			try (final FileOutputStream fos = new FileOutputStream( pomxmlFile ))
 			{
 				fos.write( content.getBytes( ) );
 				fos.flush( );
@@ -691,7 +695,7 @@ public class ModuleUpdateManager
 		if ( profilesNode != null )
 		{
 			final NodeList profileNodes = profilesNode.getChildNodes( );
-			final List<Node> profilesToRemove = new ArrayList<Node>( );
+			final List<Node> profilesToRemove = new ArrayList<>( );
 			for ( int i = 0; i < profileNodes.getLength( ); i++ )
 			{
 				final Node node = profileNodes.item( i );

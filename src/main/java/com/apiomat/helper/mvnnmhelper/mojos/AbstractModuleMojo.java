@@ -1,24 +1,30 @@
-/* Copyright (c) 2011 - 2019 All Rights Reserved, http://www.apiomat.com/
+/*
+ * Copyright 2019 the original author or authors.
  *
- * This source is property of apiomat.com. You are not allowed to use or distribute this code without a contract
- * explicitly giving you these permissions. Usage of this code includes but is not limited to running it on a server or
- * copying parts from it.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
- * Apinauten GmbH, Hainstrasse 4, 04109 Leipzig, Germany
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  *
- * Feb 26, 2019
- * thum */
+ */
 package com.apiomat.helper.mvnnmhelper.mojos;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugin.MojoExecution;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.shared.utils.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.maven.plugin.AbstractMojo;
-import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.project.MavenProject;
-import org.apache.maven.shared.utils.StringUtils;
 
 /**
  * AbstractModuleMojo class for common module related fields and methods (like the moduleName or the project)
@@ -39,6 +45,9 @@ public abstract class AbstractModuleMojo extends AbstractMojo
 	@Parameter( defaultValue = "${project}", readonly = true, required = true )
 	protected MavenProject project;
 
+	@Parameter( defaultValue = "${mojoExecution}", readonly = true )
+	protected MojoExecution mojoExecution;
+
 	/**
 	 * Directory containing the source files that should be packaged into the JAR.
 	 */
@@ -50,6 +59,9 @@ public abstract class AbstractModuleMojo extends AbstractMojo
 	 */
 	@Parameter( defaultValue = "${project.basedir}", required = true )
 	protected File baseDirectory;
+
+	@Parameter( defaultValue = "false", property = "nmSkip", required = false )
+	protected boolean nmSkip;
 
 	/**
 	 * @return either the module name from property, from pom artifact name or the artifactId
