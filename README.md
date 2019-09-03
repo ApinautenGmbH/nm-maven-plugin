@@ -39,6 +39,8 @@ The following configuration parameters are supported:
 | toVersion | YambasVersion to update to | updateVersion | Version in Form x.y.z (or x.y) | 3.3.0 |
 | usedModuleName | Name of the module to add as dependency | addDependency | a module name | MyModule |
 | usedModuleVersion | Version of the module to add as dependency | addDependency | Version in Form x.y.z (or x.y) | 1.0.0 |
+| nmSkip | skip execution of this goal | all | true, false | false |
+| finalName | name of the generated jar | upload |  | mymodule-1.0.0 |
 
 Every parameter can be either set via **command line argument or in the personal settings.xml** file:
 
@@ -106,3 +108,4 @@ After adding the plugin to the pom.xml of the module, you simply call it over `m
 | --------|------------------------:|
 | 0.0.1-SNAPSHOT | Initial version |
 | 1.0.0 | Improvements and migration to github |
+| 1.1.0 | Improvements and adding possbility to skip execution |

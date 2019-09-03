@@ -1,17 +1,19 @@
-/* Copyright (c) 2011 - 2019 All Rights Reserved, http://www.apiomat.com/
+/*
+ * Copyright 2019 the original author or authors.
  *
- * This source is property of apiomat.com. You are not allowed to use or distribute this code without a contract
- * explicitly giving you these permissions. Usage of this code includes but is not limited to running it on a server or
- * copying parts from it.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
- * Apinauten GmbH, Hainstrasse 4, 04109 Leipzig, Germany
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  *
- * Feb 25, 2019
- * thum */
+ */
 package com.apiomat.helper.mvnnmhelper.mojos;
-
-import java.io.File;
-import java.lang.reflect.Field;
 
 import org.apache.maven.archiver.MavenArchiveConfiguration;
 import org.apache.maven.archiver.MavenArchiver;
@@ -26,6 +28,9 @@ import org.apache.maven.plugins.jar.JarMojo;
 import org.apache.maven.shared.utils.StringUtils;
 import org.codehaus.plexus.archiver.jar.JarArchiver;
 import org.codehaus.plexus.archiver.util.DefaultFileSet;
+
+import java.io.File;
+import java.lang.reflect.Field;
 
 /**
  * Goal to package the native module as uploadable jar
@@ -60,6 +65,9 @@ public class PackageNMMojo extends JarMojo
 	@Parameter( defaultValue = "${project.build.sourceDirectory}", required = true )
 	private File sourceDirectory;
 
+	@Parameter( defaultValue = "false", property = "nmSkip", required = false )
+	protected boolean nmSkip;
+
 	/**
 	 * The Jar archiver.
 	 */
@@ -84,6 +92,12 @@ public class PackageNMMojo extends JarMojo
 	@Override
 	public void execute( ) throws MojoExecutionException
 	{
+		/* if execution should be skipped then return directly */
+		if ( this.nmSkip )
+		{
+			getLog( ).debug( "Execution skipped" );
+			return;
+		}
 		setValuesFromParent( );
 		super.execute( );
 	}
@@ -115,7 +129,7 @@ public class PackageNMMojo extends JarMojo
 			f.setAccessible( true );
 			return f.get( this );
 		}
-		catch ( NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e )
+		catch ( final NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e )
 		{
 			e.printStackTrace( );
 		}
@@ -153,7 +167,9 @@ public class PackageNMMojo extends JarMojo
 		{
 			final File contentDirectory = getClassesDirectory( );
 			final File sourceDirectory = getSourceDirectory( );
-			final File libDir = new File( getProject( ).getBasedir( ), "lib" );
+			final File baseDirectory = sourceDirectory.getParentFile( );
+			final File libDir = new File( baseDirectory, "lib" );
+
 			if ( contentDirectory.exists( ) == false && sourceDirectory.exists( ) == false &&
 				getProject( ).getBasedir( ).exists( ) == false && libDir.exists( ) == false )
 			{
@@ -163,16 +179,16 @@ public class PackageNMMojo extends JarMojo
 			{
 				archiver.getArchiver( ).addDirectory( contentDirectory, getIncludes( ), getExcludes( ) );
 				/* also add to jar: *.java, *.png, *.svg, and all files under META-INF in src directory */
-				final DefaultFileSet sourcefs = new DefaultFileSet( getProject( ).getBasedir( ) )
+				final DefaultFileSet sourcefs = new DefaultFileSet( baseDirectory )
 					.includeExclude( getSourceIncludes( ), getSourceExcludes( ) );
 
-				final DefaultFileSet resourceFs = new DefaultFileSet( new File( getProject( ).getBasedir( ), "src" ) )
+				final DefaultFileSet resourceFs = new DefaultFileSet( sourceDirectory )
 					.includeExclude( getSourceResourceIncludes( ), getSourceResourceExcludes( ) );
 				archiver.getArchiver( ).addFileSet( resourceFs );
 
 				archiver.getArchiver( ).addFileSet( sourcefs );
 				/* also add the pom.xml */
-				archiver.getArchiver( ).addDirectory( getProject( ).getBasedir( ), new String[ ] { "pom.xml" },
+				archiver.getArchiver( ).addDirectory( baseDirectory, new String[] { "pom.xml" },
 					new String[ ] { } );
 
 				/* and the libs */
